@@ -1,9 +1,9 @@
-import { Typography } from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 
 export const WaveformViewerPage = () => {
   return (
-    <div>
+    <Stack>
       <Typography variant="h2">Waveform Viewer</Typography>
-    </div>
+    </Stack>
   );
 };

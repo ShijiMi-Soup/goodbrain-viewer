@@ -6,4 +6,10 @@ export const lightTheme = createTheme({
     primary: cyan,
     mode: "light",
   },
+  typography: {
+    h1: {
+      fontSize: "1.5rem",
+      fontWeight: "bold",
+    },
+  },
 });
