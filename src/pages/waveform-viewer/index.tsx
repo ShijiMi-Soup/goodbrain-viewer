@@ -1,7 +1,7 @@
 import { Stack } from "@mui/material";
 import { DataSelectionPane } from "./DataSelectionPane";
 import { WaveformViewPane } from "./WaveformViewPane";
-import { Controls } from "./Controls";
+import { Controls } from "./controls";
 
 export const WaveformViewerPage = () => {
   return (
