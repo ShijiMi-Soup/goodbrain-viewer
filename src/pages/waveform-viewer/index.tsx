@@ -8,15 +8,16 @@ export const WaveformViewerPage = () => {
     <Stack
       flex={1}
       p={4}
-      direction="column"
+      direction="row"
+      flexWrap="nowrap"
       justifyContent="center"
       alignItems="center"
     >
-      <Stack direction="row" flex={1} width="100%">
-        <WaveformViewPane sx={{ flex: 1 }} />
-        <DataSelectionPane />
+      <Stack direction="column" flex={1} height="100%">
+        <WaveformViewPane sx={{ flex: 1, width: "100%", bgcolor: "cyan" }} />
+        <Controls sx={{ width: "100%" }} />
       </Stack>
-      <Controls sx={{ width: "100%" }} />
+      <DataSelectionPane sx={{ height: "100%", width: 200 }} />
     </Stack>
   );
 };

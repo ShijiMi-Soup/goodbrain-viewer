@@ -5,7 +5,7 @@ export type WaveformViewPaneProps = {
 };
 export const WaveformViewPane = ({ sx }: WaveformViewPaneProps) => {
   return (
-    <Stack bgcolor="cyan" sx={{ ...sx }}>
+    <Stack sx={{ ...sx }} alignItems="center" justifyContent="center">
       WaveformViewPane
     </Stack>
   );
