@@ -13,11 +13,13 @@ export const WaveformViewerPage = () => {
       justifyContent="center"
       alignItems="center"
     >
-      <Stack direction="column" flex={1} height="100%">
-        <WaveformViewPane sx={{ flex: 1, width: "100%", bgcolor: "cyan" }} />
+      <Stack direction="column" width="80%" height="100%">
+        <WaveformViewPane
+          sx={{ flex: 1, bgcolor: "#f4f4f4", overflowX: "auto" }}
+        />
         <Controls sx={{ width: "100%" }} />
       </Stack>
-      <DataSelectionPane sx={{ height: "100%", width: 200 }} />
+      <DataSelectionPane sx={{ height: "100%", width: 200, flex: 1 }} />
     </Stack>
   );
 };

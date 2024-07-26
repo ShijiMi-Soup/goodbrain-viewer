@@ -9,7 +9,7 @@ function App() {
       <ThemeProvider theme={lightTheme}>
         <CssBaseline />
 
-        <Stack height="100dvh" direction="column">
+        <Stack height="100dvh" maxHeight="100dvh" direction="column">
           <Header />
           <Stack flex={1} direction="column">
             <Stack flex={1}>
