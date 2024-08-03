@@ -1,10 +1,10 @@
 import { Stack, Typography } from "@mui/material";
-import { FOOTER_TEXT } from "../../global";
+import { constants } from "../../global";
 
 export const Footer = () => {
   return (
     <Stack direction="row" alignItems="center" justifyContent="center" p={1}>
-      <Typography>{FOOTER_TEXT}</Typography>
+      <Typography>{constants.texts.FOOTER_TEXT}</Typography>
     </Stack>
   );
 };

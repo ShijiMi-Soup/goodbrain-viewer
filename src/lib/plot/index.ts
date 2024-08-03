@@ -1,10 +1,5 @@
 import * as d3 from "d3";
-import {
-  INIT_TIME_START,
-  INIT_TIME_WIDTH,
-  TimePoint,
-  TimePoints,
-} from "../../global";
+import { constants, TimePoint, TimePoints } from "../../global";
 import { useEffect, useRef, useState } from "react";
 
 export const selectSvg = (svg_elm: SVGSVGElement | null) => {
@@ -32,8 +27,8 @@ const isInTimeWindow = (
 export const useLinePlot = (
   timePoints: TimePoints = [],
   timeWindow: { start: number; width: number } = {
-    start: INIT_TIME_START,
-    width: INIT_TIME_WIDTH,
+    start: constants.controls.INIT_TIME_START,
+    width: constants.controls.INIT_TIME_WIDTH,
   },
   width: number = 800,
   height: number = 600

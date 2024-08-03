@@ -7,12 +7,7 @@ import {
   SxProps,
   TextField,
 } from "@mui/material";
-import {
-  DELTA_TIME_POS,
-  DELTA_TIME_WIDTH,
-  roundTo,
-  WF_VIEWER_CONTROLS_TEXT,
-} from "../../../global";
+import { roundTo, constants } from "../../../global";
 import {
   KeyboardArrowLeft,
   KeyboardArrowRight,
@@ -27,7 +22,6 @@ import {
 } from "../../../global/contexts";
 import { readGBFocusCsvData } from "../../../lib";
 
-const texts = WF_VIEWER_CONTROLS_TEXT;
 const ROUND_DIGITS = 5;
 const NUM_INPUT_WIDTH = "4rem";
 
@@ -43,12 +37,20 @@ export const Controls = ({ sx }: ControlsProps) => {
     return Math.max(0, maxTime - _timeWidth);
   };
 
+  const getTimeStartDelta = () => {
+    return timeWidth / constants.controls.DELTA_TIME_START_FACTOR;
+  };
+
+  const getTimeWidthDelta = () => {
+    return gbFocusData.maxTime / constants.controls.DELTA_TIME_WIDTH_FACTOR;
+  };
+
   const onTimeWidthIncrease = () => {
-    const newTimeWidth = roundTo(timeWidth + DELTA_TIME_WIDTH, ROUND_DIGITS);
+    const newTimeWidth = roundTo(timeWidth + getTimeWidthDelta(), ROUND_DIGITS);
     onTimeWidthChange(newTimeWidth);
   };
   const onTimeWidthDecrease = () => {
-    const newTimeWidth = roundTo(timeWidth - DELTA_TIME_WIDTH, ROUND_DIGITS);
+    const newTimeWidth = roundTo(timeWidth - getTimeWidthDelta(), ROUND_DIGITS);
     onTimeWidthChange(newTimeWidth);
   };
   const onTimeWidthChange = (value: number) => {
@@ -60,11 +62,11 @@ export const Controls = ({ sx }: ControlsProps) => {
   };
 
   const onTimeStartIncrease = () => {
-    const newTimeStart = roundTo(timeStart + timeWidth / 10, ROUND_DIGITS);
+    const newTimeStart = roundTo(timeStart + getTimeStartDelta(), ROUND_DIGITS);
     onTimeStartChange(newTimeStart);
   };
   const onTimeStartDecrease = () => {
-    const newTimeStart = roundTo(timeStart - timeWidth / 10, ROUND_DIGITS);
+    const newTimeStart = roundTo(timeStart - getTimeStartDelta(), ROUND_DIGITS);
     onTimeStartChange(newTimeStart);
   };
   const onTimeStartChange = (value: number) => {
@@ -77,6 +79,7 @@ export const Controls = ({ sx }: ControlsProps) => {
     if (!file) return;
     readGBFocusCsvData(file).then((data) => {
       setGBFocusData(data);
+      setTimeWidth(data.maxTime);
     });
   };
 
@@ -98,7 +101,7 @@ export const Controls = ({ sx }: ControlsProps) => {
       justifyContent="space-between"
     >
       <Button variant="outlined" component="label">
-        {texts.SELECT_CSV}
+        {constants.texts.SELECT_CSV}
         <input accept=".csv" hidden type="file" onChange={handleFileChange} />
       </Button>
       <Slider
@@ -113,7 +116,7 @@ export const Controls = ({ sx }: ControlsProps) => {
           value={timeWidth}
           decreaseIcon={<ZoomIn />}
           increaseIcon={<ZoomOut />}
-          endAdornment={texts.TIME_LABEL}
+          endAdornment={constants.texts.TIME_LABEL}
           onIncrease={onTimeWidthIncrease}
           onDecrease={onTimeWidthDecrease}
           onInputChange={onTimeWidthChange}
@@ -122,7 +125,7 @@ export const Controls = ({ sx }: ControlsProps) => {
           value={timeStart}
           decreaseIcon={<KeyboardArrowLeft />}
           increaseIcon={<KeyboardArrowRight />}
-          endAdornment={texts.TIME_LABEL}
+          endAdornment={constants.texts.TIME_LABEL}
           onIncrease={onTimeStartIncrease}
           onDecrease={onTimeStartDecrease}
           onInputChange={onTimeStartChange}

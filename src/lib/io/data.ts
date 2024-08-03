@@ -7,6 +7,7 @@ import {
 } from "../../global";
 
 export const readCsvData = (file: File): Promise<string> => {
+  // TODO: Set a size limit for the file?
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
