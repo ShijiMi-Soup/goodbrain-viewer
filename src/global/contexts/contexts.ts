@@ -1,4 +1,4 @@
-import { createCustomContext } from "./_contextFactory";
+import { createCustomContext } from "./_createCustomContext";
 import { GBFocusData } from "../types";
 import {
   INIT_GBFOCUS_DATA,
@@ -16,7 +16,7 @@ export const {
   Context: TimeWidthContext,
   useCustomContext: useTimeWidthContext,
   ContextProvider: TimeWidthContextProvider,
-} = createCustomContext<number>(INIT_TIME_WIDTH, (newState) => newState > 0);
+} = createCustomContext<number>(INIT_TIME_WIDTH, (newState) => newState >= 0);
 
 //
 // GB Focus Data Contexts -----

@@ -1,12 +1,12 @@
 import React, { useState, ReactNode, createContext, useContext } from "react";
 
-type ContextFactoryType<T> = [T, (newState: T) => void];
+type CustomContext<T> = [T, (newState: T) => void];
 
 export const createCustomContext = <T,>(
   initialState: T,
   isNewStateValid?: (newState: T) => boolean
 ) => {
-  const Context = createContext<ContextFactoryType<T> | null>(null);
+  const Context = createContext<CustomContext<T> | null>(null);
 
   const ContextProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [state, _setState] = useState(initialState);

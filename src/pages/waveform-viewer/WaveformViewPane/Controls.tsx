@@ -2,6 +2,7 @@ import {
   Button,
   IconButton,
   InputAdornment,
+  Slider,
   Stack,
   SxProps,
   TextField,
@@ -25,7 +26,6 @@ import {
   useTimeWidthContext,
 } from "../../../global/contexts";
 import { readGBFocusCsvData } from "../../../lib";
-import { useEffect } from "react";
 
 const texts = WF_VIEWER_CONTROLS_TEXT;
 const ROUND_DIGITS = 5;
@@ -36,18 +36,12 @@ export type ControlsProps = {
 };
 export const Controls = ({ sx }: ControlsProps) => {
   const [timeWidth, setTimeWidth] = useTimeWidthContext();
-  const [timePos, setTimePos] = useTimeStartContext();
+  const [timeStart, setTimeStart] = useTimeStartContext();
   const [gbFocusData, setGBFocusData] = useGBFocusDataContext();
 
-  const getMaxTimePos = (maxTime: number, _timeWidth: number) =>
-    maxTime - _timeWidth;
-
-  useEffect(() => {
-    const maxTimePos = getMaxTimePos(gbFocusData.maxTime, timeWidth);
-    if (maxTimePos < timePos) {
-      setTimePos(maxTimePos);
-    }
-  }, [gbFocusData, timeWidth, timePos, setTimePos]);
+  const getMaxTimeStart = (maxTime: number, _timeWidth: number) => {
+    return Math.max(0, maxTime - _timeWidth);
+  };
 
   const onTimeWidthIncrease = () => {
     const newTimeWidth = roundTo(timeWidth + DELTA_TIME_WIDTH, ROUND_DIGITS);
@@ -59,19 +53,23 @@ export const Controls = ({ sx }: ControlsProps) => {
   };
   const onTimeWidthChange = (value: number) => {
     setTimeWidth(Math.min(value, gbFocusData.maxTime));
+    const maxTimeStart = getMaxTimeStart(gbFocusData.maxTime, value);
+    if (timeStart > maxTimeStart) {
+      setTimeStart(maxTimeStart);
+    }
   };
 
-  const onTimePosIncrease = () => {
-    const newTimePos = roundTo(timePos + DELTA_TIME_POS, ROUND_DIGITS);
-    onTimePosChange(newTimePos);
+  const onTimeStartIncrease = () => {
+    const newTimeStart = roundTo(timeStart + timeWidth / 10, ROUND_DIGITS);
+    onTimeStartChange(newTimeStart);
   };
-  const onTimePosDecrease = () => {
-    const newTimePos = roundTo(timePos - DELTA_TIME_POS, ROUND_DIGITS);
-    onTimePosChange(newTimePos);
+  const onTimeStartDecrease = () => {
+    const newTimeStart = roundTo(timeStart - timeWidth / 10, ROUND_DIGITS);
+    onTimeStartChange(newTimeStart);
   };
-  const onTimePosChange = (value: number) => {
-    const maxTimePos = getMaxTimePos(gbFocusData.maxTime, timeWidth);
-    setTimePos(Math.min(Math.max(value, 0), maxTimePos));
+  const onTimeStartChange = (value: number) => {
+    const maxTimeStart = getMaxTimeStart(gbFocusData.maxTime, timeWidth);
+    setTimeStart(Math.min(value, maxTimeStart));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,6 +80,15 @@ export const Controls = ({ sx }: ControlsProps) => {
     });
   };
 
+  const handleSliderChange = (_e: Event, newValue: number | number[]) => {
+    const [newTimeStart, newTimeEnd] = newValue as number[];
+    const newTimeWidth = newTimeEnd - newTimeStart;
+    const maxTimeStart = getMaxTimeStart(gbFocusData.maxTime, newTimeWidth);
+
+    setTimeWidth(newTimeWidth);
+    setTimeStart(Math.min(newTimeStart, maxTimeStart));
+  };
+
   return (
     <Stack
       p={1}
@@ -90,18 +97,17 @@ export const Controls = ({ sx }: ControlsProps) => {
       alignItems="center"
       justifyContent="space-between"
     >
-      <input
-        accept=".csv"
-        id="csv-file-input"
-        style={{ display: "none" }}
-        type="file"
-        onChange={handleFileChange}
+      <Button variant="outlined" component="label">
+        {texts.SELECT_CSV}
+        <input accept=".csv" hidden type="file" onChange={handleFileChange} />
+      </Button>
+      <Slider
+        value={[timeStart, timeStart + timeWidth]}
+        onChange={handleSliderChange}
+        min={0}
+        max={gbFocusData.maxTime}
+        sx={{ mx: 4, flex: 1 }}
       />
-      <label htmlFor="csv-file-input">
-        <Button variant="outlined" component="span">
-          {texts.SELECT_CSV}
-        </Button>
-      </label>
       <Stack direction="row" alignItems="center">
         <NumberInput
           value={timeWidth}
@@ -113,13 +119,13 @@ export const Controls = ({ sx }: ControlsProps) => {
           onInputChange={onTimeWidthChange}
         />
         <NumberInput
-          value={timePos}
+          value={timeStart}
           decreaseIcon={<KeyboardArrowLeft />}
           increaseIcon={<KeyboardArrowRight />}
           endAdornment={texts.TIME_LABEL}
-          onIncrease={onTimePosIncrease}
-          onDecrease={onTimePosDecrease}
-          onInputChange={onTimePosChange}
+          onIncrease={onTimeStartIncrease}
+          onDecrease={onTimeStartDecrease}
+          onInputChange={onTimeStartChange}
         />
       </Stack>
     </Stack>
