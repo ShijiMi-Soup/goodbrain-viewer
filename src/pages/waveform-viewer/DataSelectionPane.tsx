@@ -40,7 +40,7 @@ type SelectionInputsProps = {
 const SelectionInputs = ({ dataCategory }: SelectionInputsProps) => {
   const dataCategoryItems = constants.data.DATA_CATEGORY_ITEMS;
   const dataLabels = constants.data.DATA_LABELS;
-  const [dataSelection] = useDataSelectionContext();
+  const [dataSelection, setDataSelection] = useDataSelectionContext();
 
   return (
     <Stack direction="column">
@@ -52,6 +52,9 @@ const SelectionInputs = ({ dataCategory }: SelectionInputsProps) => {
             label={dataLabels[key].text}
             color={dataLabels[key].color}
             checked={dataSelection[key]}
+            onChange={(checked) => {
+              setDataSelection({ ...dataSelection, [key]: checked });
+            }}
           />
         );
       })}

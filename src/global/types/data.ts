@@ -1,3 +1,8 @@
+export type TimeWindow = {
+  start: number;
+  width: number;
+};
+
 export type TimePoint = {
   time: number;
   value: number;
