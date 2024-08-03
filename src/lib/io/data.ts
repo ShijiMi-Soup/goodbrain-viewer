@@ -74,6 +74,12 @@ const _eegToTimePoints = (data: d3.DSVRowArray<string>) => {
   return timePoints;
 };
 
+const _getMaxTime = (data: d3.DSVRowArray<string>) => {
+  const lastRow = data[data.length - 1];
+  const maxTime = _parseElapsedTime(lastRow["Elapsed Time"]);
+  return Math.floor(maxTime);
+};
+
 export const readGBFocusCsvData = async (file: File) => {
   const data = await readCsvData(file);
 
@@ -88,6 +94,7 @@ export const readGBFocusCsvData = async (file: File) => {
     theta: _toTimePoints(parsedData, "theta"),
     gamma: _toTimePoints(parsedData, "gamma"),
     eeg: _eegToTimePoints(parsedData),
+    maxTime: _getMaxTime(parsedData),
   };
 
   return gbFocusData;

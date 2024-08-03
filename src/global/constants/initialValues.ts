@@ -9,4 +9,5 @@ export const INIT_GBFOCUS_DATA: GBFocusData = {
   theta: [],
   gamma: [],
   eeg: [],
+  maxTime: 5,
 };

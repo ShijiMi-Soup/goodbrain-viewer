@@ -17,17 +17,6 @@ export const WaveformViewPane = ({ sx }: WaveformViewPaneProps) => {
   const [timeStart] = useTimeStartContext();
   const [timeWidth] = useTimeWidthContext();
 
-  // useEffect(() => {
-  //   if (csvData) {
-  //     // Crop csv data based on timeStart and timeWidth
-  //     // TODO: Start here!!
-  //     const newData = gbFocusData.filter(
-  //       (d) => +d.time >= timeStart && +d.time <= timeStart + timeWidth
-  //     );
-  //     setCsvData(newData);
-  //   }
-  // }, [timeStart, timeWidth, gbFocusData]);
-
   return (
     <Stack direction="column" width="80%" height="100%">
       <Stack

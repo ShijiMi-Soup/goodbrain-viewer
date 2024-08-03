@@ -21,4 +21,8 @@ export type EEGData = {
   eeg: TimePoints;
 };
 
-export type GBFocusData = EEGData & MentalStateData & BandPowerData;
+export type GBFocusData = EEGData &
+  MentalStateData &
+  BandPowerData & {
+    maxTime: number;
+  };

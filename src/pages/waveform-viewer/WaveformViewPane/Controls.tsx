@@ -25,6 +25,7 @@ import {
   useTimeWidthContext,
 } from "../../../global/contexts";
 import { readGBFocusCsvData } from "../../../lib";
+import { useEffect } from "react";
 
 const texts = WF_VIEWER_CONTROLS_TEXT;
 const ROUND_DIGITS = 5;
@@ -36,30 +37,41 @@ export type ControlsProps = {
 export const Controls = ({ sx }: ControlsProps) => {
   const [timeWidth, setTimeWidth] = useTimeWidthContext();
   const [timePos, setTimePos] = useTimeStartContext();
-  const setGBFocusData = useGBFocusDataContext()[1];
+  const [gbFocusData, setGBFocusData] = useGBFocusDataContext();
+
+  const getMaxTimePos = (maxTime: number, _timeWidth: number) =>
+    maxTime - _timeWidth;
+
+  useEffect(() => {
+    const maxTimePos = getMaxTimePos(gbFocusData.maxTime, timeWidth);
+    if (maxTimePos < timePos) {
+      setTimePos(maxTimePos);
+    }
+  }, [gbFocusData, timeWidth, timePos, setTimePos]);
 
   const onTimeWidthIncrease = () => {
     const newTimeWidth = roundTo(timeWidth + DELTA_TIME_WIDTH, ROUND_DIGITS);
-    setTimeWidth(newTimeWidth);
+    onTimeWidthChange(newTimeWidth);
   };
   const onTimeWidthDecrease = () => {
     const newTimeWidth = roundTo(timeWidth - DELTA_TIME_WIDTH, ROUND_DIGITS);
-    setTimeWidth(newTimeWidth);
+    onTimeWidthChange(newTimeWidth);
   };
   const onTimeWidthChange = (value: number) => {
-    setTimeWidth(value);
+    setTimeWidth(Math.min(value, gbFocusData.maxTime));
   };
 
   const onTimePosIncrease = () => {
     const newTimePos = roundTo(timePos + DELTA_TIME_POS, ROUND_DIGITS);
-    setTimePos(newTimePos);
+    onTimePosChange(newTimePos);
   };
   const onTimePosDecrease = () => {
     const newTimePos = roundTo(timePos - DELTA_TIME_POS, ROUND_DIGITS);
-    setTimePos(newTimePos);
+    onTimePosChange(newTimePos);
   };
   const onTimePosChange = (value: number) => {
-    setTimePos(value);
+    const maxTimePos = getMaxTimePos(gbFocusData.maxTime, timeWidth);
+    setTimePos(Math.min(Math.max(value, 0), maxTimePos));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
