@@ -1,5 +1,7 @@
 import { ReactNode } from "react";
 import {
+  DataCategoryContextProvider,
+  DataSelectionContextProvider,
   GBFocusDataContextProvider,
   TimeStartContextProvider,
   TimeWidthContextProvider,
@@ -13,7 +15,11 @@ export const ContextProvider = ({ children }: ContextProviderProps) => {
   return (
     <TimeStartContextProvider>
       <TimeWidthContextProvider>
-        <GBFocusDataContextProvider>{children}</GBFocusDataContextProvider>
+        <DataSelectionContextProvider>
+          <DataCategoryContextProvider>
+            <GBFocusDataContextProvider>{children}</GBFocusDataContextProvider>
+          </DataCategoryContextProvider>
+        </DataSelectionContextProvider>
       </TimeWidthContextProvider>
     </TimeStartContextProvider>
   );

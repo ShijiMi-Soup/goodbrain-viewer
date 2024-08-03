@@ -17,12 +17,29 @@ export type MentalStateData = {
   meditation: TimePoints;
 };
 
-export type EEGData = {
+export type RawData = {
   eeg: TimePoints;
 };
 
-export type GBFocusData = EEGData &
-  MentalStateData &
-  BandPowerData & {
-    maxTime: number;
-  };
+export type BrainWaveData = BandPowerData & RawData & MentalStateData;
+
+export type GBFocusData = BrainWaveData & {
+  maxTime: number;
+};
+
+export type DataSelection = {
+  [key in keyof BrainWaveData]: boolean;
+};
+
+export const _DATA_CATEGORIES = ["mentalState", "bandPower", "raw"] as const;
+
+export type DataCategory = (typeof _DATA_CATEGORIES)[number];
+
+export type DataLabel = {
+  text: string;
+  color: string;
+};
+
+export type DataLabels = {
+  [key in keyof BrainWaveData]: DataLabel;
+};

@@ -1,47 +1,60 @@
 import { Circle } from "@mui/icons-material";
 import { Stack, SxProps, Tab, Tabs, Typography, Checkbox } from "@mui/material";
-import { useState } from "react";
+import { BrainWaveData, constants, DataCategory } from "../../global";
+import { DATA_CATEGORIES } from "../../global/constants/data";
+import {
+  useDataCategoryContext,
+  useDataSelectionContext,
+} from "../../global/contexts";
 
 export type DataSelectionPaneProps = {
   sx?: SxProps;
 };
 export const DataSelectionPane = ({ sx }: DataSelectionPaneProps) => {
-  const [tabValue, setTabValue] = useState("index");
+  const [tabValue, setTabValue] = useDataCategoryContext();
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: string) => {
-    setTabValue(newValue);
+    if (DATA_CATEGORIES.includes(newValue as DataCategory))
+      setTabValue(newValue as DataCategory);
   };
 
   return (
     <Stack sx={{ ...sx }}>
       <Tabs value={tabValue} onChange={handleTabChange}>
-        <Tab label="状態指数" value="index" />
-        <Tab label="脳波" value="raw" />
+        {DATA_CATEGORIES.map((category) => (
+          <Tab
+            key={category}
+            label={constants.data.DATA_CATEGORY_LABELS[category]}
+            value={category}
+          />
+        ))}
       </Tabs>
-      {tabValue === "index" && <IndexSelectionInput />}
-      {tabValue === "raw" && <RawSelectionInput />}
+      {tabValue && <SelectionInputs dataCategory={tabValue} />}
     </Stack>
   );
 };
 
-const IndexSelectionInput = () => {
-  return (
-    <Stack direction="column">
-      <DataSelectionInput color="red" label="集中度" />
-      <DataSelectionInput color="orange" label="リラックス度" />
-    </Stack>
-  );
+type SelectionInputsProps = {
+  dataCategory: DataCategory;
 };
+const SelectionInputs = ({ dataCategory }: SelectionInputsProps) => {
+  const dataCategoryItems = constants.data.DATA_CATEGORY_ITEMS;
+  const dataLabels = constants.data.DATA_LABELS;
+  const [dataSelection] = useDataSelectionContext();
 
-const RawSelectionInput = () => {
   return (
     <Stack direction="column">
-      <DataSelectionInput color="yellow" label="δ波" />
-      <DataSelectionInput color="green" label="θ波" />
-      <DataSelectionInput color="teal" label="α波" />
-      <DataSelectionInput color="blue" label="β波" />
-      <DataSelectionInput color="purple" label="γ波" />
-      <DataSelectionInput color="gray" label="生波形" />
+      {dataCategoryItems[dataCategory].map((_key) => {
+        const key = _key as keyof BrainWaveData;
+        return (
+          <DataSelectionInput
+            key={key}
+            label={dataLabels[key].text}
+            color={dataLabels[key].color}
+            checked={dataSelection[key]}
+          />
+        );
+      })}
     </Stack>
   );
 };
@@ -49,11 +62,22 @@ const RawSelectionInput = () => {
 type DataSelectionInputProps = {
   label: string;
   color: string;
+  checked: boolean;
+  onChange?: (checked: boolean) => void;
 };
-const DataSelectionInput = ({ label, color }: DataSelectionInputProps) => {
+const DataSelectionInput = ({
+  label,
+  color,
+  checked,
+  onChange,
+}: DataSelectionInputProps) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (onChange) onChange(e.target.checked);
+  };
+
   return (
     <Stack direction="row" alignItems="center" p={1}>
-      <Checkbox />
+      <Checkbox checked={checked} onChange={handleChange} color="primary" />
       <Circle fontSize="small" sx={{ mr: 1, color: color }} />
       <Typography>{label}</Typography>
     </Stack>

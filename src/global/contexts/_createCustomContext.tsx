@@ -34,5 +34,5 @@ export const createCustomContext = <T,>(
     return context;
   };
 
-  return { Context, ContextProvider, useCustomContext };
+  return [useCustomContext, ContextProvider] as const;
 };
