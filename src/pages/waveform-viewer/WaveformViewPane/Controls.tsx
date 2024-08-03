@@ -6,7 +6,12 @@ import {
   SxProps,
   TextField,
 } from "@mui/material";
-import { roundTo, WF_VIEWER_CONTROLS_TEXT } from "../../../global";
+import {
+  DELTA_TIME_POS,
+  DELTA_TIME_WIDTH,
+  roundTo,
+  WF_VIEWER_CONTROLS_TEXT,
+} from "../../../global";
 import {
   KeyboardArrowLeft,
   KeyboardArrowRight,
@@ -14,13 +19,13 @@ import {
   ZoomOut,
 } from "@mui/icons-material";
 import "./number-input.css";
-import { useState } from "react";
+import {
+  useTimeStartContext,
+  useTimeWidthContext,
+} from "../../../global/contexts";
+import { readGBFocusCsvData } from "../../../lib";
 
 const texts = WF_VIEWER_CONTROLS_TEXT;
-const DELTA_TIME_WIDTH = 0.2;
-const INIT_TIME_WIDTH = 10;
-const DELTA_TIME_POS = 0.2;
-const INIT_TIME_POS = 0;
 const ROUND_DIGITS = 5;
 const NUM_INPUT_WIDTH = "4rem";
 
@@ -28,8 +33,8 @@ export type ControlsProps = {
   sx?: SxProps;
 };
 export const Controls = ({ sx }: ControlsProps) => {
-  const [timeWidth, setTimeWidth] = useState(INIT_TIME_WIDTH); // TODO: Temp
-  const [timePos, setTimePos] = useState(INIT_TIME_POS); // TODO: Temp
+  const [timeWidth, setTimeWidth] = useTimeWidthContext();
+  const [timePos, setTimePos] = useTimeStartContext();
 
   const onTimeWidthIncrease = () => {
     const newTimeWidth = roundTo(timeWidth + DELTA_TIME_WIDTH, ROUND_DIGITS);
@@ -55,6 +60,14 @@ export const Controls = ({ sx }: ControlsProps) => {
     setTimePos(value);
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    readGBFocusCsvData(file).then((data) => {
+      console.log(data);
+    });
+  };
+
   return (
     <Stack
       p={1}
@@ -63,7 +76,18 @@ export const Controls = ({ sx }: ControlsProps) => {
       alignItems="center"
       justifyContent="space-between"
     >
-      <Button variant="outlined">{texts.SELECT_CSV}</Button>
+      <input
+        accept=".csv"
+        id="csv-file-input"
+        style={{ display: "none" }}
+        type="file"
+        onChange={handleFileChange}
+      />
+      <label htmlFor="csv-file-input">
+        <Button variant="outlined" component="span">
+          {texts.SELECT_CSV}
+        </Button>
+      </label>
       <Stack direction="row" alignItems="center">
         <NumberInput
           value={timeWidth}

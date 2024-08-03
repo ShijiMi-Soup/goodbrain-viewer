@@ -3,6 +3,9 @@ import { useEffect, useRef } from "react";
 
 const margin = { top: 20, right: 20, bottom: 30, left: 50 };
 
+const TIME_COL = "time";
+const WF_COL = "rawwave";
+
 export type LineChartProps = {
   data?: d3.DSVRowArray<string>;
   width?: number;
@@ -37,8 +40,8 @@ export const LineChart = ({
 
       const line = d3
         .line()
-        .x((d) => x(d.time))
-        .y((d) => y(d.rawwave));
+        .x((d) => x(d[TIME_COL]))
+        .y((d) => y(d[WF_COL]));
 
       svg
         .append("path")

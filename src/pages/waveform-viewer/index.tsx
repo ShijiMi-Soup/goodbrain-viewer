@@ -1,7 +1,6 @@
 import { Stack } from "@mui/material";
 import { DataSelectionPane } from "./DataSelectionPane";
 import { WaveformViewPane } from "./WaveformViewPane";
-import { Controls } from "./controls";
 
 export const WaveformViewerPage = () => {
   return (
@@ -13,12 +12,9 @@ export const WaveformViewerPage = () => {
       justifyContent="center"
       alignItems="center"
     >
-      <Stack direction="column" width="80%" height="100%">
-        <WaveformViewPane
-          sx={{ flex: 1, bgcolor: "#f4f4f4", overflowX: "auto" }}
-        />
-        <Controls sx={{ width: "100%" }} />
-      </Stack>
+      <WaveformViewPane
+        sx={{ flex: 1, bgcolor: "#f4f4f4", overflowX: "auto" }}
+      />
       <DataSelectionPane sx={{ height: "100%", width: 200, flex: 1 }} />
     </Stack>
   );
