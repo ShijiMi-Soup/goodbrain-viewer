@@ -20,6 +20,7 @@ import {
 } from "@mui/icons-material";
 import "./number-input.css";
 import {
+  useGBFocusDataContext,
   useTimeStartContext,
   useTimeWidthContext,
 } from "../../../global/contexts";
@@ -35,6 +36,7 @@ export type ControlsProps = {
 export const Controls = ({ sx }: ControlsProps) => {
   const [timeWidth, setTimeWidth] = useTimeWidthContext();
   const [timePos, setTimePos] = useTimeStartContext();
+  const setGBFocusData = useGBFocusDataContext()[1];
 
   const onTimeWidthIncrease = () => {
     const newTimeWidth = roundTo(timeWidth + DELTA_TIME_WIDTH, ROUND_DIGITS);
@@ -64,7 +66,7 @@ export const Controls = ({ sx }: ControlsProps) => {
     const file = e.target.files?.[0];
     if (!file) return;
     readGBFocusCsvData(file).then((data) => {
-      console.log(data);
+      setGBFocusData(data);
     });
   };
 

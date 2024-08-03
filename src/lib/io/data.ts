@@ -1,5 +1,10 @@
 import * as d3 from "d3";
-import { BrainwaveDataRow } from "../../global";
+import {
+  MentalStateData,
+  BandPowerData,
+  TimePoints,
+  GBFocusData,
+} from "../../global";
 
 export const readCsvData = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -28,33 +33,62 @@ const _parseElapsedTime = (timeString: string): number => {
   return totalSeconds;
 };
 
-const _parseEeg = (eegString: string) => {
-  return eegString.split(";").map((v) => +v);
+const _parseChunk = (chunkString: string, slicer: string = ";") => {
+  return chunkString.split(slicer).map((v) => +v);
 };
 
-const _parseGBFocusCsvData = (data: string) => {
-  const parsedData = d3.csvParse(data);
-  const brainWaveData: BrainwaveDataRow[] = parsedData.map((d) => {
-    return {
-      timeStamp: new Date(d.TimeStamps),
-      elapsedTime: _parseElapsedTime(d["Elapsed Time"]),
-      alpha: +d.alpha,
-      beta: +d.beta,
-      delta: +d.delta,
-      theta: +d.theta,
-      gamma: +d.gamma,
-      eeg: _parseEeg(d.eeg),
-      attention: +d.attention,
-      meditation: +d.meditation,
-    };
+const _toTimePoints = (
+  data: d3.DSVRowArray<string>,
+  varname: keyof (BandPowerData & MentalStateData)
+) => {
+  const timePoints: TimePoints = data
+    .filter((d) => d[varname] !== "")
+    .map((d) => ({
+      time: _parseElapsedTime(d["Elapsed Time"]),
+      value: +d[varname],
+    }));
+  return timePoints;
+};
+
+const _eegToTimePoints = (data: d3.DSVRowArray<string>) => {
+  const splited = data
+    .filter((d) => d["eeg"] !== "")
+    .map((d) => ({
+      time: _parseElapsedTime(d["Elapsed Time"]),
+      value: _parseChunk(d["eeg"]),
+    }));
+
+  const timePoints: TimePoints = [];
+
+  splited.forEach((item) => {
+    const timeIncrement = 1 / item.value.length;
+
+    item.value.forEach((eegValue, index) => {
+      timePoints.push({
+        time: item.time + index * timeIncrement,
+        value: eegValue,
+      });
+    });
   });
 
-  return brainWaveData;
+  return timePoints;
 };
 
-export const readGBFocusCsvData = async (
-  file: File
-): Promise<BrainwaveDataRow[]> => {
+export const readGBFocusCsvData = async (file: File) => {
   const data = await readCsvData(file);
-  return _parseGBFocusCsvData(data);
+
+  const parsedData = d3.csvParse(data);
+
+  const gbFocusData: GBFocusData = {
+    meditation: _toTimePoints(parsedData, "meditation"),
+    attention: _toTimePoints(parsedData, "attention"),
+    alpha: _toTimePoints(parsedData, "alpha"),
+    beta: _toTimePoints(parsedData, "beta"),
+    delta: _toTimePoints(parsedData, "delta"),
+    theta: _toTimePoints(parsedData, "theta"),
+    gamma: _toTimePoints(parsedData, "gamma"),
+    eeg: _eegToTimePoints(parsedData),
+  };
+
+  return gbFocusData;
 };

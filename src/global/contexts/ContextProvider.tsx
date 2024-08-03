@@ -1,6 +1,9 @@
 import { ReactNode } from "react";
-import { TimeStartContextProvider } from "./TimeStartContextProvider";
-import { TimeWidthContextProvider } from "./TimeWidthContextProvider";
+import {
+  GBFocusDataContextProvider,
+  TimeStartContextProvider,
+  TimeWidthContextProvider,
+} from "./contexts";
 
 export type ContextProviderProps = {
   children: ReactNode;
@@ -9,7 +12,9 @@ export type ContextProviderProps = {
 export const ContextProvider = ({ children }: ContextProviderProps) => {
   return (
     <TimeStartContextProvider>
-      <TimeWidthContextProvider>{children}</TimeWidthContextProvider>
+      <TimeWidthContextProvider>
+        <GBFocusDataContextProvider>{children}</GBFocusDataContextProvider>
+      </TimeWidthContextProvider>
     </TimeStartContextProvider>
   );
 };
