@@ -1,4 +1,3 @@
-import * as d3 from "d3";
 import { Stack, SxProps } from "@mui/material";
 import { LineChart } from "../../../components/charts";
 import { useElementSize } from "../../../global";
@@ -19,22 +18,15 @@ export const WaveformViewPane = ({ sx }: WaveformViewPaneProps) => {
   const [timeWidth] = useTimeWidthContext();
 
   // useEffect(() => {
-  //   d3.csv("/brainwave_2024-08-03 09:13.csv").then((data) => {
-  //     console.log(data);
-  //     setCsvData(data);
-  //   });
-  // }, []);
-
-  // useEffect(() => {
   //   if (csvData) {
   //     // Crop csv data based on timeStart and timeWidth
   //     // TODO: Start here!!
-  //     const newData = csvData.filter(
+  //     const newData = gbFocusData.filter(
   //       (d) => +d.time >= timeStart && +d.time <= timeStart + timeWidth
   //     );
   //     setCsvData(newData);
   //   }
-  // }, [timeStart, timeWidth, csvData]);
+  // }, [timeStart, timeWidth, gbFocusData]);
 
   return (
     <Stack direction="column" width="80%" height="100%">
@@ -44,7 +36,12 @@ export const WaveformViewPane = ({ sx }: WaveformViewPaneProps) => {
         alignItems="center"
         justifyContent="flex-end"
       >
-        <LineChart data={gbFocusData} width={width} height={height} />
+        <LineChart
+          data={gbFocusData}
+          timeWindow={{ start: timeStart, width: timeWidth }}
+          width={width}
+          height={height}
+        />
       </Stack>
       <Controls sx={{ width: "100%" }} />
     </Stack>

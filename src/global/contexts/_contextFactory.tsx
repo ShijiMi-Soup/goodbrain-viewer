@@ -1,19 +1,23 @@
-import React, {
-  useState,
-  Dispatch,
-  SetStateAction,
-  ReactNode,
-  createContext,
-  useContext,
-} from "react";
+import React, { useState, ReactNode, createContext, useContext } from "react";
 
-type ContextFactoryType<T> = [T, Dispatch<SetStateAction<T>>];
+type ContextFactoryType<T> = [T, (newState: T) => void];
 
-export const createCustomContext = <T,>(initialState: T) => {
+export const createCustomContext = <T,>(
+  initialState: T,
+  isNewStateValid?: (newState: T) => boolean
+) => {
   const Context = createContext<ContextFactoryType<T> | null>(null);
 
   const ContextProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [state, setState] = useState(initialState);
+    const [state, _setState] = useState(initialState);
+
+    const setState = (newState: T) => {
+      if (isNewStateValid && !isNewStateValid(newState)) {
+        return;
+      }
+
+      _setState(newState);
+    };
 
     return (
       <Context.Provider value={[state, setState]}>{children}</Context.Provider>

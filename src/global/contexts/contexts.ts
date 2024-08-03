@@ -10,13 +10,13 @@ export const {
   Context: TimeStartContext,
   useCustomContext: useTimeStartContext,
   ContextProvider: TimeStartContextProvider,
-} = createCustomContext<number>(INIT_TIME_START);
+} = createCustomContext<number>(INIT_TIME_START, (newState) => newState >= 0);
 
 export const {
   Context: TimeWidthContext,
   useCustomContext: useTimeWidthContext,
   ContextProvider: TimeWidthContextProvider,
-} = createCustomContext<number>(INIT_TIME_WIDTH);
+} = createCustomContext<number>(INIT_TIME_WIDTH, (newState) => newState > 0);
 
 //
 // GB Focus Data Contexts -----
