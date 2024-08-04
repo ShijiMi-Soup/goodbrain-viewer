@@ -1,6 +1,6 @@
 import { Stack, SxProps } from "@mui/material";
 import { LineChart } from "../../../components/charts";
-import { BrainWaveData, TimePoints, useElementSize } from "../../../global";
+import { BrainWaveData, useElementSize } from "../../../global";
 import { Controls } from "./Controls";
 import {
   useDataCategoryContext,
@@ -22,7 +22,10 @@ export const WaveformViewPane = ({ sx }: WaveformViewPaneProps) => {
   const [timeWidth] = useTimeWidthContext();
   const [dataCategory] = useDataCategoryContext();
   const [dataSelection] = useDataSelectionContext();
-  const [plotData, setPlotData] = useState<TimePoints[]>([]);
+
+  const [selectedDataKeys, setSelectedDataKeys] = useState<
+    (keyof BrainWaveData)[]
+  >([]);
 
   useEffect(() => {
     const categoryItems = DATA_CATEGORY_ITEMS[dataCategory];
@@ -32,11 +35,7 @@ export const WaveformViewPane = ({ sx }: WaveformViewPaneProps) => {
           value && categoryItems.includes(key as keyof BrainWaveData)
       )
       .map(([key]) => key);
-
-    const newPlotData = selectedDataKeys.map(
-      (key) => gbFocusData[key as keyof BrainWaveData]
-    );
-    setPlotData(newPlotData);
+    setSelectedDataKeys(selectedDataKeys as (keyof BrainWaveData)[]);
   }, [gbFocusData, dataSelection, dataCategory]);
 
   return (
@@ -48,7 +47,7 @@ export const WaveformViewPane = ({ sx }: WaveformViewPaneProps) => {
         justifyContent="flex-end"
       >
         <LineChart
-          data={plotData}
+          selectedDataKeys={selectedDataKeys}
           timeWindow={{ start: timeStart, width: timeWidth }}
           width={width}
           height={height}
