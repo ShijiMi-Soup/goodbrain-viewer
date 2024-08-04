@@ -44,13 +44,14 @@ export const Controls = ({ sx }: ControlsProps) => {
   };
 
   const getTimeStartDelta = () => {
-    return timeWidth / constants.controls.DELTA_TIME_START_FACTOR;
+    return (
+      constants.controls.DELTA_TIME_START_FACTOR / gbFocusData[dataCategory].fs
+    );
   };
 
   const getTimeWidthDelta = () => {
     return (
-      getMaxTime(gbFocusData, dataCategory) /
-      constants.controls.DELTA_TIME_WIDTH_FACTOR
+      constants.controls.DELTA_TIME_WIDTH_FACTOR / gbFocusData[dataCategory].fs
     );
   };
 
@@ -98,13 +99,49 @@ export const Controls = ({ sx }: ControlsProps) => {
     });
   };
 
-  const handleSliderChange = (_e: Event, newValue: number | number[]) => {
+  const handleSliderChange = (
+    _e: Event,
+    newValue: number | number[],
+    activeThumb: number
+  ) => {
     const [newTimeStart, newTimeEnd] = newValue as number[];
     const newTimeWidth = newTimeEnd - newTimeStart;
     const maxTimeStart = getMaxTimeStart(
       getMaxTime(gbFocusData, dataCategory),
       newTimeWidth
     );
+    const maxTime = getMaxTime(gbFocusData, dataCategory);
+
+    // TODO: Create n_max and n_min
+    const minDist = 10 / gbFocusData[dataCategory].fs;
+    const maxDist = 10000 / gbFocusData[dataCategory].fs;
+
+    if (activeThumb === 0) {
+      setTimeStart(newTimeStart);
+      if (newTimeStart >= maxTimeStart) {
+        if (newTimeStart > timeStart) {
+          const _newTimeWidth = maxTime - newTimeStart;
+          if (_newTimeWidth < minDist) {
+            setTimeWidth(minDist);
+            setTimeStart(maxTime - minDist);
+          } else {
+            setTimeWidth(maxTime - newTimeStart);
+          }
+        }
+      }
+      return;
+    }
+
+    if (newTimeWidth < minDist) {
+      setTimeStart(newTimeEnd - minDist);
+      setTimeWidth(minDist);
+      return;
+    } else if (maxDist < newTimeWidth) {
+      const clampedTimeStart = Math.max(newTimeStart, newTimeEnd - maxDist);
+      setTimeStart(clampedTimeStart);
+      setTimeWidth(maxDist);
+      return;
+    }
 
     setTimeWidth(newTimeWidth);
     setTimeStart(Math.min(newTimeStart, maxTimeStart));
@@ -128,6 +165,8 @@ export const Controls = ({ sx }: ControlsProps) => {
         min={0}
         max={getMaxTime(gbFocusData, dataCategory)}
         sx={{ mx: 4, flex: 1 }}
+        disableSwap
+        step={1}
       />
       <Stack direction="row" alignItems="center">
         <NumberInput

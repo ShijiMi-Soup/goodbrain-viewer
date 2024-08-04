@@ -31,14 +31,7 @@ export const useLinePlot = (
   const [dataCategory] = useDataCategoryContext();
   const [dataConfigs] = useDataConfigsContext();
 
-  // const [time, setTime] = useState<number[]>([]);
-  // const [plotData, setPlotData] = useState<PlotDatum[]>([]);
-
   const svgRef = useRef<SVGSVGElement>(null);
-
-  // useEffect(() => {
-
-  // }, [gbFocusData, dataConfigs, dataCategory, timeStart, timeWidth]);
 
   useEffect(() => {
     const configs = dataConfigs[dataCategory];
@@ -50,7 +43,6 @@ export const useLinePlot = (
     const sample_start = Math.floor(timeStart * categoryData.fs);
     const sample_end = Math.floor((timeStart + timeWidth) * categoryData.fs);
     const time = categoryData.time.slice(sample_start, sample_end);
-    // setTime(newTime);
 
     const plotData: PlotDatum[] = Object.entries(categoryData.data)
       .filter(([key]) => selectedDataKeys.includes(key))
@@ -78,7 +70,7 @@ export const useLinePlot = (
     const x = d3
       .scaleLinear()
       .range([0, _width])
-      .domain([timeStart, timeStart + timeWidth]);
+      .domain([timeStart, timeStart + timeWidth - 1 / categoryData.fs]);
 
     const y = d3
       .scaleLinear()
