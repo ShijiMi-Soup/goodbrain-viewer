@@ -1,16 +1,15 @@
 import { Stack, SxProps } from "@mui/material";
 import { LineChart } from "../../../components/charts";
-import { BrainWaveData, useElementSize } from "../../../global";
+import { BrainWaveDataKey, useElementSize } from "../../../global";
 import { Controls } from "./Controls";
 import {
   useDataCategoryContext,
-  useDataSelectionContext,
+  useDataConfigsContext,
   useGBFocusDataContext,
   useTimeStartContext,
   useTimeWidthContext,
 } from "../../../global/contexts";
 import { useState, useEffect } from "react";
-import { DATA_CATEGORY_ITEMS } from "../../../global/constants/data";
 
 export type WaveformViewPaneProps = {
   sx?: SxProps;
@@ -21,22 +20,18 @@ export const WaveformViewPane = ({ sx }: WaveformViewPaneProps) => {
   const [timeStart] = useTimeStartContext();
   const [timeWidth] = useTimeWidthContext();
   const [dataCategory] = useDataCategoryContext();
-  const [dataSelection] = useDataSelectionContext();
+  const [dataConfigs] = useDataConfigsContext();
 
-  const [selectedDataKeys, setSelectedDataKeys] = useState<
-    (keyof BrainWaveData)[]
-  >([]);
+  const [, setSelectedDataKeys] = useState<BrainWaveDataKey[]>([]);
 
   useEffect(() => {
-    const categoryItems = DATA_CATEGORY_ITEMS[dataCategory];
-    const selectedDataKeys = Object.entries(dataSelection)
-      .filter(
-        ([key, value]) =>
-          value && categoryItems.includes(key as keyof BrainWaveData)
-      )
+    const configs = dataConfigs[dataCategory];
+    const selectedDataKeys = Object.entries(configs)
+      .filter(([, value]) => value.show)
       .map(([key]) => key);
-    setSelectedDataKeys(selectedDataKeys as (keyof BrainWaveData)[]);
-  }, [gbFocusData, dataSelection, dataCategory]);
+
+    setSelectedDataKeys(selectedDataKeys as BrainWaveDataKey[]);
+  }, [gbFocusData, dataConfigs, dataCategory]);
 
   return (
     <Stack direction="column" width="80%" height="100%">
@@ -47,7 +42,6 @@ export const WaveformViewPane = ({ sx }: WaveformViewPaneProps) => {
         justifyContent="flex-end"
       >
         <LineChart
-          selectedDataKeys={selectedDataKeys}
           timeWindow={{ start: timeStart, width: timeWidth }}
           width={width}
           height={height}

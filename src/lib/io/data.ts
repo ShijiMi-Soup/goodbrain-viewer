@@ -1,9 +1,15 @@
 import * as d3 from "d3";
 import {
-  MentalStateData,
-  BandPowerData,
-  TimePoints,
   GBFocusData,
+  NumArray,
+  BandPowerDataKey,
+  MentalStateDataKey,
+  arange,
+  constants,
+  MentalStateData,
+  DataCategory,
+  BandPowerData,
+  RawData,
 } from "../../global";
 
 export const readCsvData = (file: File): Promise<string> => {
@@ -38,41 +44,28 @@ const _parseChunk = (chunkString: string, slicer: string = ";") => {
   return chunkString.split(slicer).map((v) => +v);
 };
 
-const _toTimePoints = (
+const _toNumArray = (
   data: d3.DSVRowArray<string>,
-  varname: keyof (BandPowerData & MentalStateData)
+  varname: BandPowerDataKey | MentalStateDataKey
 ) => {
-  const timePoints: TimePoints = data
+  const numArray: NumArray = data
     .filter((d) => d[varname] !== "")
-    .map((d) => ({
-      time: _parseElapsedTime(d["Elapsed Time"]),
-      value: +d[varname],
-    }));
-  return timePoints;
+    .map((d) => +d[varname]);
+  return numArray;
 };
 
-const _eegToTimePoints = (data: d3.DSVRowArray<string>) => {
+const _eegToNumArray = (data: d3.DSVRowArray<string>) => {
   const splited = data
     .filter((d) => d["eeg"] !== "")
-    .map((d) => ({
-      time: _parseElapsedTime(d["Elapsed Time"]),
-      value: _parseChunk(d["eeg"]),
-    }));
+    .map((d) => _parseChunk(d["eeg"]));
 
-  const timePoints: TimePoints = [];
+  const numArray: NumArray = [];
 
   splited.forEach((item) => {
-    const timeIncrement = 1 / item.value.length;
-
-    item.value.forEach((eegValue, index) => {
-      timePoints.push({
-        time: item.time + index * timeIncrement,
-        value: eegValue,
-      });
-    });
+    numArray.push(...item);
   });
 
-  return timePoints;
+  return numArray;
 };
 
 const _getMaxTime = (data: d3.DSVRowArray<string>) => {
@@ -81,21 +74,55 @@ const _getMaxTime = (data: d3.DSVRowArray<string>) => {
   return Math.floor(maxTime);
 };
 
+const _getTimeArray = (category: DataCategory, maxTime: number) => {
+  const fs = constants.data.SAMPLE_FREQS[category];
+  return arange(0, maxTime, 1 / fs);
+};
+
 export const readGBFocusCsvData = async (file: File) => {
   const data = await readCsvData(file);
 
   const parsedData = d3.csvParse(data);
 
+  const maxTime = _getMaxTime(parsedData);
+
+  const mentalStateData = constants.data.MENTAL_STATE_DATA_KEYS.reduce(
+    (acc, key) => {
+      acc["data"][key] = _toNumArray(parsedData, key);
+      return acc;
+    },
+    {
+      data: {},
+      category: "mentalState",
+      fs: constants.data.SAMPLE_FREQS.mentalState,
+      time: _getTimeArray("mentalState", maxTime),
+    } as MentalStateData
+  );
+
+  const bandPowerData = constants.data.BAND_POWER_DATA_KEYS.reduce(
+    (acc, key) => {
+      acc["data"][key] = _toNumArray(parsedData, key);
+      return acc;
+    },
+    {
+      data: {},
+      category: "bandPower",
+      fs: constants.data.SAMPLE_FREQS.bandPower,
+      time: _getTimeArray("bandPower", maxTime),
+    } as BandPowerData
+  );
+
+  const rawData: RawData = {
+    category: "raw",
+    fs: constants.data.SAMPLE_FREQS.raw,
+    time: _getTimeArray("raw", maxTime),
+    data: { eeg: _eegToNumArray(parsedData) },
+  };
+
   const gbFocusData: GBFocusData = {
-    meditation: _toTimePoints(parsedData, "meditation"),
-    attention: _toTimePoints(parsedData, "attention"),
-    alpha: _toTimePoints(parsedData, "alpha"),
-    beta: _toTimePoints(parsedData, "beta"),
-    delta: _toTimePoints(parsedData, "delta"),
-    theta: _toTimePoints(parsedData, "theta"),
-    gamma: _toTimePoints(parsedData, "gamma"),
-    eeg: _eegToTimePoints(parsedData),
-    maxTime: _getMaxTime(parsedData),
+    mentalState: mentalStateData,
+    bandPower: bandPowerData,
+    raw: rawData,
   };
 
   return gbFocusData;

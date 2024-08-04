@@ -7,7 +7,7 @@ import {
   SxProps,
   TextField,
 } from "@mui/material";
-import { roundTo, constants } from "../../../global";
+import { roundTo, constants, GBFocusData, DataCategory } from "../../../global";
 import {
   KeyboardArrowLeft,
   KeyboardArrowRight,
@@ -16,6 +16,7 @@ import {
 } from "@mui/icons-material";
 import "./number-input.css";
 import {
+  useDataCategoryContext,
   useGBFocusDataContext,
   useTimeStartContext,
   useTimeWidthContext,
@@ -32,6 +33,11 @@ export const Controls = ({ sx }: ControlsProps) => {
   const [timeWidth, setTimeWidth] = useTimeWidthContext();
   const [timeStart, setTimeStart] = useTimeStartContext();
   const [gbFocusData, setGBFocusData] = useGBFocusDataContext();
+  const [dataCategory] = useDataCategoryContext();
+
+  const getMaxTime = (data: GBFocusData, category: DataCategory) => {
+    return data[category].time[data[category].time.length - 1];
+  };
 
   const getMaxTimeStart = (maxTime: number, _timeWidth: number) => {
     return Math.max(0, maxTime - _timeWidth);
@@ -42,7 +48,10 @@ export const Controls = ({ sx }: ControlsProps) => {
   };
 
   const getTimeWidthDelta = () => {
-    return gbFocusData.maxTime / constants.controls.DELTA_TIME_WIDTH_FACTOR;
+    return (
+      getMaxTime(gbFocusData, dataCategory) /
+      constants.controls.DELTA_TIME_WIDTH_FACTOR
+    );
   };
 
   const onTimeWidthIncrease = () => {
@@ -54,8 +63,11 @@ export const Controls = ({ sx }: ControlsProps) => {
     onTimeWidthChange(newTimeWidth);
   };
   const onTimeWidthChange = (value: number) => {
-    setTimeWidth(Math.min(value, gbFocusData.maxTime));
-    const maxTimeStart = getMaxTimeStart(gbFocusData.maxTime, value);
+    setTimeWidth(Math.min(value, getMaxTime(gbFocusData, dataCategory)));
+    const maxTimeStart = getMaxTimeStart(
+      getMaxTime(gbFocusData, dataCategory),
+      value
+    );
     if (timeStart > maxTimeStart) {
       setTimeStart(maxTimeStart);
     }
@@ -70,7 +82,10 @@ export const Controls = ({ sx }: ControlsProps) => {
     onTimeStartChange(newTimeStart);
   };
   const onTimeStartChange = (value: number) => {
-    const maxTimeStart = getMaxTimeStart(gbFocusData.maxTime, timeWidth);
+    const maxTimeStart = getMaxTimeStart(
+      getMaxTime(gbFocusData, dataCategory),
+      timeWidth
+    );
     setTimeStart(Math.min(value, maxTimeStart));
   };
 
@@ -79,14 +94,17 @@ export const Controls = ({ sx }: ControlsProps) => {
     if (!file) return;
     readGBFocusCsvData(file).then((data) => {
       setGBFocusData(data);
-      setTimeWidth(data.maxTime);
+      setTimeWidth(getMaxTime(data, dataCategory));
     });
   };
 
   const handleSliderChange = (_e: Event, newValue: number | number[]) => {
     const [newTimeStart, newTimeEnd] = newValue as number[];
     const newTimeWidth = newTimeEnd - newTimeStart;
-    const maxTimeStart = getMaxTimeStart(gbFocusData.maxTime, newTimeWidth);
+    const maxTimeStart = getMaxTimeStart(
+      getMaxTime(gbFocusData, dataCategory),
+      newTimeWidth
+    );
 
     setTimeWidth(newTimeWidth);
     setTimeStart(Math.min(newTimeStart, maxTimeStart));
@@ -108,7 +126,7 @@ export const Controls = ({ sx }: ControlsProps) => {
         value={[timeStart, timeStart + timeWidth]}
         onChange={handleSliderChange}
         min={0}
-        max={gbFocusData.maxTime}
+        max={getMaxTime(gbFocusData, dataCategory)}
         sx={{ mx: 4, flex: 1 }}
       />
       <Stack direction="row" alignItems="center">

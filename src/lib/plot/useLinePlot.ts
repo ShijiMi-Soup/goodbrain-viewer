@@ -1,31 +1,23 @@
 import * as d3 from "d3";
-import {
-  BrainWaveData,
-  constants,
-  isInTimeWindow,
-  TimePoint,
-  TimePoints,
-} from "../../global";
+import { arange, constants, NumArray } from "../../global";
 import { useEffect, useRef } from "react";
 import {
+  useDataCategoryContext,
+  useDataConfigsContext,
   useGBFocusDataContext,
   useTimeStartContext,
   useTimeWidthContext,
 } from "../../global/contexts";
 import { MARGIN } from "../../global/constants/plot";
-import { DATA_LABELS } from "../../global/constants/data";
-
-// TODO: category と selection を渡して、こちら側でデータを絞り込む
 
 type PlotDatum = {
-  timePoints: TimePoints;
+  values: NumArray;
   minValue: number;
   maxValue: number;
   color: string;
 };
 
 export const useLinePlot = (
-  selectedDataKeys: (keyof BrainWaveData)[],
   timeWindow: { start: number; width: number } = {
     start: constants.controls.INIT_TIME_START,
     width: constants.controls.INIT_TIME_WIDTH,
@@ -36,10 +28,44 @@ export const useLinePlot = (
   const [timeStart] = useTimeStartContext();
   const [timeWidth] = useTimeWidthContext();
   const [gbFocusData] = useGBFocusDataContext();
+  const [dataCategory] = useDataCategoryContext();
+  const [dataConfigs] = useDataConfigsContext();
+
+  // const [time, setTime] = useState<number[]>([]);
+  // const [plotData, setPlotData] = useState<PlotDatum[]>([]);
 
   const svgRef = useRef<SVGSVGElement>(null);
 
+  // useEffect(() => {
+
+  // }, [gbFocusData, dataConfigs, dataCategory, timeStart, timeWidth]);
+
   useEffect(() => {
+    const configs = dataConfigs[dataCategory];
+    const selectedDataKeys = Object.entries(configs)
+      .filter(([, value]) => value.show)
+      .map(([key]) => key);
+
+    const categoryData = gbFocusData[dataCategory];
+    const sample_start = Math.floor(timeStart * categoryData.fs);
+    const sample_end = Math.floor((timeStart + timeWidth) * categoryData.fs);
+    const time = categoryData.time.slice(sample_start, sample_end);
+    // setTime(newTime);
+
+    const plotData: PlotDatum[] = Object.entries(categoryData.data)
+      .filter(([key]) => selectedDataKeys.includes(key))
+      .map(([key, numArray]) => {
+        const values = numArray.slice(sample_start, sample_end);
+
+        // @ts-expect-error dataConfigs
+        const color = dataConfigs[dataCategory][key].color;
+
+        const minValue = d3.min(values) || 0;
+        const maxValue = d3.max(values) || 0;
+
+        return { values, minValue, maxValue, color };
+      });
+
     const _width = width - MARGIN.left - MARGIN.right;
     const _height = height - MARGIN.top - MARGIN.bottom;
 
@@ -53,17 +79,6 @@ export const useLinePlot = (
       .scaleLinear()
       .range([0, _width])
       .domain([timeStart, timeStart + timeWidth]);
-
-    const plotData: PlotDatum[] = selectedDataKeys.map((dataKey) => {
-      const timePoints = gbFocusData[dataKey].filter((d) =>
-        isInTimeWindow(d.time, timeWindow)
-      );
-      const color = DATA_LABELS[dataKey].color;
-      const minValue = d3.min(timePoints, (d) => d.value) || 0;
-      const maxValue = d3.max(timePoints, (d) => d.value) || 0;
-
-      return { timePoints, minValue, maxValue, color };
-    });
 
     const y = d3
       .scaleLinear()
@@ -82,18 +97,21 @@ export const useLinePlot = (
     // Add the Y Axis
     svg.append("g").call(d3.axisLeft(y));
 
-    // Create a line generator
-    const line = d3
-      .line<TimePoint>()
-      .x((d) => x(d.time))
-      .y((d) => y(d.value));
-
     plotData.forEach((plotDatum) => {
-      const { timePoints, color } = plotDatum;
+      const { values, color } = plotDatum;
 
+      // Create a line generator
+      const line = d3
+        .line<number>()
+        .x((idx) => x(time[idx]))
+        .y((idx) => y(values[idx]));
+
+      const indices = arange(0, Math.min(time.length, values.length), 1);
+
+      if (indices.length === 0) return;
       svg
         .append("path")
-        .datum(timePoints)
+        .datum(indices)
         // TODO: Add gradient fill
         .attr("fill", "none")
         .attr("stroke", color)
@@ -105,9 +123,10 @@ export const useLinePlot = (
     height,
     timeStart,
     timeWidth,
-    selectedDataKeys,
     gbFocusData,
     timeWindow,
+    dataCategory,
+    dataConfigs,
   ]);
 
   return { svgRef };

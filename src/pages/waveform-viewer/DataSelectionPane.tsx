@@ -1,26 +1,26 @@
 import { Circle } from "@mui/icons-material";
 import { Stack, SxProps, Tab, Tabs, Typography, Checkbox } from "@mui/material";
-import { BrainWaveData, constants, DataCategory } from "../../global";
+import { constants, DataCategory } from "../../global";
 import { DATA_CATEGORIES } from "../../global/constants/data";
 import {
   useDataCategoryContext,
-  useDataSelectionContext,
+  useDataConfigsContext,
 } from "../../global/contexts";
 
 export type DataSelectionPaneProps = {
   sx?: SxProps;
 };
 export const DataSelectionPane = ({ sx }: DataSelectionPaneProps) => {
-  const [tabValue, setTabValue] = useDataCategoryContext();
+  const [dataCategory, setDataCategory] = useDataCategoryContext();
 
   const handleTabChange = (_: React.SyntheticEvent, newValue: string) => {
     if (DATA_CATEGORIES.includes(newValue as DataCategory))
-      setTabValue(newValue as DataCategory);
+      setDataCategory(newValue as DataCategory);
   };
 
   return (
     <Stack sx={{ ...sx }}>
-      <Tabs value={tabValue} onChange={handleTabChange}>
+      <Tabs value={dataCategory} onChange={handleTabChange}>
         {DATA_CATEGORIES.map((category) => (
           <Tab
             key={category}
@@ -29,7 +29,7 @@ export const DataSelectionPane = ({ sx }: DataSelectionPaneProps) => {
           />
         ))}
       </Tabs>
-      {tabValue && <SelectionInputs dataCategory={tabValue} />}
+      <SelectionInputs dataCategory={dataCategory} />
     </Stack>
   );
 };
@@ -38,22 +38,25 @@ type SelectionInputsProps = {
   dataCategory: DataCategory;
 };
 const SelectionInputs = ({ dataCategory }: SelectionInputsProps) => {
-  const dataCategoryItems = constants.data.DATA_CATEGORY_ITEMS;
-  const dataLabels = constants.data.DATA_LABELS;
-  const [dataSelection, setDataSelection] = useDataSelectionContext();
+  const [dataConfigs, setDataConfigs] = useDataConfigsContext();
 
   return (
     <Stack direction="column">
-      {dataCategoryItems[dataCategory].map((_key) => {
-        const key = _key as keyof BrainWaveData;
+      {Object.entries(dataConfigs[dataCategory]).map(([key, dataConfig]) => {
         return (
           <DataSelectionInput
             key={key}
-            label={dataLabels[key].text}
-            color={dataLabels[key].color}
-            checked={dataSelection[key]}
+            label={dataConfig.label}
+            color={dataConfig.color}
+            checked={dataConfig.show}
             onChange={(checked) => {
-              setDataSelection({ ...dataSelection, [key]: checked });
+              setDataConfigs({
+                ...dataConfigs,
+                [dataCategory]: {
+                  ...dataConfigs[dataCategory],
+                  [key]: { ...dataConfig, show: checked },
+                },
+              });
             }}
           />
         );
